@@ -2,7 +2,22 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import '@patternfly/react-core/dist/styles/base.css';
 import MonacoEditor, { MonacoDiffEditor } from "react-monaco-editor";
-import { Button, Page, PageSection, Title, Flex, FlexItem, Checkbox, Tooltip } from '@patternfly/react-core';
+import {
+  Button,
+  Page,
+  EmptyState,
+  EmptyStateIcon,
+  EmptyStateVariant,
+  EmptyStateBody,
+  EmptyStateSecondaryActions,
+  PageSection,
+  PageSectionVariants,
+  Title,
+  Flex,
+  FlexItem,
+  Checkbox,
+  Tooltip
+} from '@patternfly/react-core';
 import { CodeIcon, CopyIcon, DownloadIcon, UploadIcon } from '@patternfly/react-icons';
 import Dropzone from "react-dropzone";
 import './poc.css';
@@ -95,7 +110,7 @@ class CodeEditor extends React.Component {
         </div>
         <MonacoEditor
           height="400"
-          width={narrowWidth ? "800" : "1200"}
+          width={narrowWidth ? "800" : ""}
           language="text/html"
           value={value}
           options={options}
@@ -128,11 +143,12 @@ class CodeEditorUploadDownload extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      value: "<html><!-- This very long comment will demonstrate the default ability to include horizontal scroll at the more narrow widths -->\n<head>\n	<!-- HTML comment -->\n	<style type=\"text/css\">\n		/* CSS comment */\n	</style>\n	<script type=\"javascript\">\n		// JavaScript comment\n	</"+"script>\n</head>\n<body></body>\n</html>",
+      value: "",
       language: 'html',
       filename: '',
       isLoading: false,
-      dropzoneProps: {}
+      dropzoneProps: {},
+      showEmptyState: true,
     };
   }
 
@@ -208,8 +224,12 @@ class CodeEditorUploadDownload extends React.Component {
     element.click();
   };
 
+  toggleEmptyState = () => {
+    this.setState({showEmptyState: false})
+  }
+
   render() {
-    const { value, dropzoneProps, isLoading, language } = this.state;
+    const { value, dropzoneProps, isLoading, language, showEmptyState } = this.state;
     const options = {
       selectOnLineNumbers: true,
       roundedSelection: false,
@@ -253,15 +273,31 @@ class CodeEditorUploadDownload extends React.Component {
               </FlexItem>
             </Flex>
             <input {...getInputProps()} /* hidden, necessary for react-dropzone */ />
-            <MonacoEditor
-              height="400"
-              language={language}
-              value={value}
-              options={options}
-              onChange={this.onChange}
-              editorDidMount={this.editorDidMount}
-              theme="vs-light"
-            />
+            { showEmptyState && !value ? (
+                <EmptyState variant={EmptyStateVariant.small}>
+                  <EmptyStateIcon icon={CodeIcon} />
+                  <Title headingLevel="h4" size="lg">
+                    Start editing
+                  </Title>
+                  <EmptyStateBody>
+                    Drag a file here or browse to upload
+                  </EmptyStateBody>
+                  <Button variant="primary" onClick={open}>Browse</Button>
+                  <EmptyStateSecondaryActions>
+                    <Button variant="link" onClick={this.toggleEmptyState}>Start from scratch</Button>
+                  </EmptyStateSecondaryActions>
+                </EmptyState>
+            ) : (
+              <MonacoEditor
+                height="400"
+                language={language}
+                value={value}
+                options={options}
+                onChange={this.onChange}
+                editorDidMount={this.editorDidMount}
+                theme="vs-light"
+              />
+            )}
           </div>
         )}
       </Dropzone>
@@ -347,16 +383,16 @@ class InlineEditor extends React.Component {
 
 const App = () => (
   <Page>
-    <PageSection>
+    <PageSection variant={PageSectionVariants.light}>
       <Title headingLevel="h1">Basic example</Title>
       <CodeEditor />
     </PageSection>
-    <PageSection>
+    <PageSection variant={PageSectionVariants.light}>
       <Title headingLevel="h1">Upload/download example</Title>
       <div>For simplicity, this example only accept files with the following extensions: .js .html .css .txt .json</div>
       <CodeEditorUploadDownload />
     </PageSection>
-    <PageSection>
+    <PageSection variant={PageSectionVariants.light}>
       <Title headingLevel="h1">Diff example</Title>
       <DiffEditor />
     </PageSection>

@@ -1,3 +1,7 @@
 .hideOverflowRuler .decorationsOverviewRuler{
   display: none;
 }
+
+.pf-c-empty-state {
+  background-color: #f0f0f0;
+}
