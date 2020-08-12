@@ -9,12 +9,21 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 
 const pfDir = path.dirname(require.resolve('@patternfly/patternfly/package.json'));
 
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
+
 // Don't include PatternFly styles twice
 module.exports = (env, argv) => {
   const isProd = argv.mode === 'production';
 
   return {
-    entry: './src/app.js',
+    entry: {
+      "app": './src/app.js',
+      "editor.worker": 'monaco-editor/esm/vs/editor/editor.worker.js',
+      "json.worker": 'monaco-editor/esm/vs/language/json/json.worker',
+      "css.worker": 'monaco-editor/esm/vs/language/css/css.worker',
+      "html.worker": 'monaco-editor/esm/vs/language/html/html.worker',
+      "ts.worker": 'monaco-editor/esm/vs/language/typescript/ts.worker',
+    },
     output: {
       path: path.resolve('public'),
       filename: '[name].[contenthash:8].bundle.js'
@@ -59,6 +68,10 @@ module.exports = (env, argv) => {
         },
         {
           test: /\.css$/,
+          include: [
+            path.resolve(__dirname, './src'),
+            path.resolve(__dirname, './node_modules/@patternfly'),
+          ],
           use: [
             {
               loader: MiniCssExtractPlugin.loader,
@@ -70,6 +83,13 @@ module.exports = (env, argv) => {
               loader: 'css-loader'
             }
           ]
+        },
+        {
+          test: /\.css$/,
+          include: [
+            path.resolve(__dirname, './node_modules/monaco-editor')
+          ],
+          use: ['style-loader', 'css-loader'],
         },
         {
           test: /\.(png|jpg|gif|svg)$/,
@@ -126,6 +146,7 @@ module.exports = (env, argv) => {
           // new ReactRefreshWebpackPlugin()
         ]
       ),
+      new MonacoWebpackPlugin()
     ],
     stats: isProd ? 'normal' : 'minimal'
   };
